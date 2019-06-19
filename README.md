@@ -2,7 +2,7 @@ Effcient On-the-Fly Model Checking for LTL and CTL★
 =======
 
 This repository contains a functional implementation in Haskell of the algorithms included in the article
-_Effcient On-the-Fly Model Checking for CTL★_.
+_Effcient On-the-Fly Model Checking for CTL★_ (Bhat, Girish, Rance Cleaveland, and Orna Grumberg).
 
 It's important to say this method works without Büchi automatons.
 In the words of the authors:
