@@ -5,7 +5,7 @@ import Data.Set(singleton)
 import Core
 
 {-
-  Examples was taked from:
+  Examples was taken from:
   “LOGIC IN COMPUTER SCIENCE, Modelling and Reasoning about Systems”,
   MICHAEL HUTH & MARK RYAN, Second Edition.
 -}
