@@ -65,7 +65,6 @@ main = do
         forM_ ctl_examples (\(s, φ) -> do
                               putStr $ show (s, φ) ++ ": "
                               print $ eval_modchkCTLS (kripkeS_example, s) φ)
-                                              
 
 
 
