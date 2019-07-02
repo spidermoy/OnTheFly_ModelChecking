@@ -48,7 +48,7 @@ ctl_examples = [
           (0, A $ opF $ St $ Var "r"),
           (0, E $ U (St $ ConjS (Var "p") (Var "q")) (St $ Var "r")),
           (0, A $ U (St $ Var "p") (St $ Var "r")),
-          (0, A $ opG $ St $ impS (DisyS (DisyS (Var "p") (Var "q")) (Var "r")) 
+          (0, A $ opG $ St $ impS (DisjS (DisjS (Var "p") (Var "q")) (Var "r")) 
                                   (E $ opF $ St $ E $ opG $ St $ Var "r"))
                ]
 

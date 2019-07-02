@@ -23,13 +23,13 @@ type At = String
 data StateF = Var At
             | Neg At
             | ConjS StateF StateF
-            | DisyS StateF StateF
+            | DisjS StateF StateF
             | A PathF
             | E PathF deriving (Eq, Ord)
 
 -- Path forms.
 data PathF = St StateF
-           | DisyP PathF PathF
+           | DisjP PathF PathF
            | ConjP PathF PathF
            | U PathF PathF
            | V PathF PathF
@@ -40,8 +40,8 @@ negS::StateF->StateF
 negS φ = case φ of
           Var a -> Neg a
           Neg a -> Var a 
-          ConjS φ₁ φ₂ -> DisyS (negS φ₁) (negS φ₂)
-          DisyS φ₁ φ₂ -> ConjS (negS φ₁) (negS φ₂)
+          ConjS φ₁ φ₂ -> DisjS (negS φ₁) (negS φ₂)
+          DisjS φ₁ φ₂ -> ConjS (negS φ₁) (negS φ₂)
           A ф -> E $ negP ф
           E ф -> A $ negP ф
 
@@ -49,8 +49,8 @@ negS φ = case φ of
 negP::PathF->PathF
 negP ф = case ф of
           St φ -> St $ negS φ 
-          ConjP ф₁ ф₂ -> DisyP (negP ф₁) (negP ф₂)
-          DisyP ф₁ ф₂ -> ConjP (negP ф₁) (negP ф₂)
+          ConjP ф₁ ф₂ -> DisjP (negP ф₁) (negP ф₂)
+          DisjP ф₁ ф₂ -> ConjP (negP ф₁) (negP ф₂)
           X ф₁ -> X $ negP ф₁
           U ф₁ ф₂ -> V (negP ф₁) (negP ф₂)
           V ф₁ ф₂ -> U (negP ф₁) (negP ф₂)
@@ -77,10 +77,10 @@ opF ф = case ф of
          _ -> U (St top) ф  
 
 impP::PathF->PathF->PathF
-impP ф₁ ф₂ = if ф₁==ф₂ then St top else DisyP (negP ф₁) ф₂
+impP ф₁ ф₂ = if ф₁==ф₂ then St top else DisjP (negP ф₁) ф₂
 
 impS::StateF->StateF->StateF
-impS φ₁ φ₂ = if φ₁==φ₂ then top else DisyS (negS φ₁) φ₂
+impS φ₁ φ₂ = if φ₁==φ₂ then top else DisjS (negS φ₁) φ₂
 
 
 
@@ -103,7 +103,7 @@ subgoals ks@(KS (_,r,_)) σ@(Assrt (s,_Φ)) =
     else let ф = elemAt 0 _Φ in
          case ф of
            St φ -> if eval_modchkCTLS (ks,s) φ then T else Subg [deleteF ф σ]
-           DisyP ф₁ ф₂ -> Subg [insertF ф₁ $ insertF ф₂ $ deleteF ф σ]
+           DisjP ф₁ ф₂ -> Subg [insertF ф₁ $ insertF ф₂ $ deleteF ф σ]
            ConjP ф₁ ф₂ -> -- ф∧ф ≡ ф
                         if ф₁==ф₂
                         then Subg [insertF ф₁ $ deleteF ф σ]
@@ -301,13 +301,13 @@ modchkCTLS σ@(Assrt (s,_Φ)) ks@(KS (_,_,l)) =
        Var a -> update (l s a)
        Neg a -> update ((not . l s) a)
        ConjS φ₁ φ₂ -> do
-                      b1 <- modchkCTLS (Assrt (s,singleton $ St φ₁)) ks
-                      b2 <- modchkCTLS (Assrt (s,singleton $ St φ₂)) ks
-                      update (b1 && b2)
-       DisyS φ₁ φ₂ -> do
-                      b1 <- modchkCTLS (Assrt (s,singleton $ St φ₁)) ks
-                      b2 <- modchkCTLS (Assrt (s,singleton $ St φ₂)) ks
-                      update (b1 || b2)
+                       b1 <- modchkCTLS (Assrt (s,singleton $ St φ₁)) ks
+                       b2 <- modchkCTLS (Assrt (s,singleton $ St φ₂)) ks
+                       update (b1 && b2)
+       DisjS φ₁ φ₂ -> do
+                       b1 <- modchkCTLS (Assrt (s,singleton $ St φ₁)) ks
+                       b2 <- modchkCTLS (Assrt (s,singleton $ St φ₂)) ks
+                       update (b1 || b2)
        A ф -> do
                b <- modchkLTL (Assrt (s,singleton ф)) ks
                update b
@@ -352,17 +352,17 @@ instance Show StateF where
               ConjS s1 s2@(Neg q) -> "("++show s1++") ⋀ "++show s2
               ConjS s1 s2 -> "("++show s1++") ⋀ ("++show s2++")"
              -- Disjunction
-              DisyS (Var p) (Var q) -> p++" ⋁ "++q
-              DisyS (Neg p) (Neg q) -> "¬"++p++" ⋁ ¬"++q
-              DisyS s1 (Var q) -> case s1 of
+              DisjS (Var p) (Var q) -> p++" ⋁ "++q
+              DisjS (Neg p) (Neg q) -> "¬"++p++" ⋁ ¬"++q
+              DisjS s1 (Var q) -> case s1 of
                                     Neg p -> show s1++" ⋁ "++q
                                     _ -> "("++show s1++") ⋁ "++q
-              DisyS (Var p) s2 -> case s2 of
+              DisjS (Var p) s2 -> case s2 of
                                     Neg q -> p++" ⋁ ¬"++q
                                     _ -> p++" ⋁ ("++show s2++")"
-              DisyS s1@(Neg p) s2 -> show s1++" ⋁ ("++show s2++")"
-              DisyS s1 s2@(Neg q) -> "("++show s1++") ⋁ "++show s2
-              DisyS s1 s2 -> "("++show s1++") ⋁ ("++show s2++")"
+              DisjS s1@(Neg p) s2 -> show s1++" ⋁ ("++show s2++")"
+              DisjS s1 s2@(Neg q) -> "("++show s1++") ⋁ "++show s2
+              DisjS s1 s2 -> "("++show s1++") ⋁ ("++show s2++")"
              -- ForAll
               A p -> case p of
                       X p' -> "AX "++show p'
@@ -390,10 +390,10 @@ instance Show PathF where
              ConjP p1 p2@(St _) -> "("++show p1++") ⋀ "++show p2
              ConjP p1 p2 -> "("++show p1++") ⋀ ("++show p2++")"
              -- Disjunction
-             DisyP p1@(St _) p2@(St _) -> show p1++" ⋁ "++show p2
-             DisyP p1@(St _) p2 -> show p1++" ⋁ ("++show p2++")"
-             DisyP p1 p2@(St _) -> "("++show p1++") ⋁ "++show p2
-             DisyP p1 p2 -> "("++show p1++") ⋁ ("++show p2++")"
+             DisjP p1@(St _) p2@(St _) -> show p1++" ⋁ "++show p2
+             DisjP p1@(St _) p2 -> show p1++" ⋁ ("++show p2++")"
+             DisjP p1 p2@(St _) -> "("++show p1++") ⋁ "++show p2
+             DisjP p1 p2 -> "("++show p1++") ⋁ ("++show p2++")"
              -- neXt state
              X q -> case q of
                      St s@(Var _) -> "X"++show s
