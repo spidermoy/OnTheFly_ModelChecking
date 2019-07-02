@@ -13,4 +13,4 @@ In the words of the authors:
 
 See [Efficient On-the-Fly Model Checking for CTL★](https://www.semanticscholar.org/paper/Eecient-On-the-fly-Model-Checking-for-Ctl-Bhat-Cleaveland/e7dbc6e9ff14c98d61af98247e79a3b2058cbfff) for more details.
 
-[This repository](https://github.com/spidermoy/Model_Checking-LTL-CTLS) simplifies and improves Girish Bhat, Rance Cleaveland and Orna Grumberg work.
+###### [This repository](https://github.com/spidermoy/Model_Checking-LTL-CTLS) simplifies and improves Girish Bhat, Rance Cleaveland and Orna Grumberg work.
